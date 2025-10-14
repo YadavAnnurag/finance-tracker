@@ -27,8 +27,8 @@ A full-stack personal finance management application built with React, Node.js, 
 
 ## Live Demo
 
-- Frontend: financetracker-one-ebon.vercel.app
-- Backend API: https://finance-tracker-api-etny.onrender.com
+- Frontend: (https://financetracker-one-ebon.vercel.app/)
+- Backend API: (https://finance-tracker-api-etny.onrender.com)
 
 ## Local Development
 
