@@ -13,6 +13,15 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Server is running' });
 });
 
+
+app.use(cors({
+  origin: [
+    'http://localhost:3000',
+    'https://financetracker-one-ebon.vercel.app/' 
+  ],
+  credentials: true
+}));
+
 // ============= USER ROUTES =============
 app.post('/api/users', async (req, res) => {
   try {
