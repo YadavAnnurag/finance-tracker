@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
+import {API_URL} from '../config';
 
 export default function TransactionForm({ onTransactionAdded, editingTransaction, onCancelEdit }) {
   const { user } = useAuth();
@@ -32,11 +33,11 @@ export default function TransactionForm({ onTransactionAdded, editingTransaction
 
   const fetchCategories = async () => {
     try {
-      const response = await axios.get(`http://localhost:5000/api/categories/${user.id}`);
+      const response = await axios.get(`${API_URL}/api/categories/${user.id}`);
       if (response.data.length === 0) {
         // Create default categories if none exist
-        await axios.post(`http://localhost:5000/api/categories/default/${user.id}`);
-        const newResponse = await axios.get(`http://localhost:5000/api/categories/${user.id}`);
+        await axios.post(`${API_URL}/api/categories/default/${user.id}`);
+        const newResponse = await axios.get(`${API_URL}/api/categories/${user.id}`);
         setCategories(newResponse.data);
       } else {
         setCategories(response.data);
@@ -53,11 +54,11 @@ export default function TransactionForm({ onTransactionAdded, editingTransaction
     try {
       if (editingTransaction) {
         await axios.put(
-          `http://localhost:5000/api/transactions/${editingTransaction.id}`,
+          `${API_URL}/api/transactions/${editingTransaction.id}`,
           formData
         );
       } else {
-        await axios.post('http://localhost:5000/api/transactions', {
+        await axios.post('${API_URL}/api/transactions', {
           ...formData,
           userId: user.id
         });

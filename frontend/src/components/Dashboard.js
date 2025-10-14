@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
 import TransactionForm from './TransactionForm';
 import TransactionList from './TransactionList';
+import { API_URL } from '../config';
 
 export default function Dashboard() {
   const { user, signOut } = useAuth();
@@ -23,7 +24,7 @@ export default function Dashboard() {
 
   const fetchSummary = async () => {
     try {
-      const response = await axios.get(`http://localhost:5000/api/transactions/summary/${user.id}`);
+      const response = await axios.get(`${API_URL}/api/transactions/summary/${user.id}`);
       setSummary(response.data);
     } catch (error) {
       console.error('Error fetching summary:', error);
@@ -32,7 +33,7 @@ export default function Dashboard() {
 
   const fetchTransactions = async () => {
     try {
-      const response = await axios.get(`http://localhost:5000/api/transactions/${user.id}`);
+      const response = await axios.get(`${API_URL}/api/transactions/${user.id}`);
       setTransactions(response.data);
     } catch (error) {
       console.error('Error fetching transactions:', error);
@@ -52,7 +53,7 @@ export default function Dashboard() {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/transactions/${id}`);
+      await axios.delete(`${API_URL}/api/transactions/${id}`);
       fetchSummary();
       fetchTransactions();
     } catch (error) {

@@ -3,14 +3,14 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "npx prisma generate",
     "dev": "nodemon index.js",
     "start": "node index.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
+  "description": "Finance Tracker Backend",
   "dependencies": {
     "@prisma/client": "^6.17.0",
     "cors": "^2.8.5",
