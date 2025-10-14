@@ -49,7 +49,7 @@ cd finance-tracker
 # Backend Setup:
 cd backend
 npm install
-echo "DATABASE_URL=https://xrijbavkadxlzoilgevr.supabase.co" > .env
+echo "DATABASE_URL=your_postgres_url" > .env
 npx prisma migrate dev
 npm run dev
 
