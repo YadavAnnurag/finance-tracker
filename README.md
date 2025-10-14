@@ -62,25 +62,31 @@ npm install
 npm start
 
 
-# Environment Variables
-# Backend (.env):
+## Environment Variables 
+
+##  Backend (.env):
+
 DATABASE_URL=your_postgresql_connection_string
 PORT=5000
 
-# Frontend (.env):
+## Frontend (.env):
+
 REACT_APP_API_URL=http://localhost:5000
 REACT_APP_SUPABASE_URL=your_supabase_url
 REACT_APP_SUPABASE_ANON_KEY=your_supabase_anon_key
 
 
 
-Contributing
+## Contributing
+
 Pull requests are welcome! For major changes, please open an issue first.
 
+## License
 
-License
 MIT
 
-Author
+
+## Author  
+
 Name - YadavAnnurag
 
