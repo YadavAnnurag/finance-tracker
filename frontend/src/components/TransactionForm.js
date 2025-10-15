@@ -58,7 +58,7 @@ export default function TransactionForm({ onTransactionAdded, editingTransaction
           formData
         );
       } else {
-        await axios.post('${API_URL}/api/transactions', {
+        await axios.post(`${API_URL}/api/transactions`, {
           ...formData,
           userId: user.id
         });

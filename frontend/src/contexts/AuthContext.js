@@ -1,7 +1,7 @@
 import {  createContext, useContext,useEffect, useState } from "react";
 import {supabase} from '../supabaseClient';
 import  axios  from "axios";
-import { API_URL } from "../config";
+import { API_URL } from '../config';
 
 const AuthContext = createContext({});
 
@@ -32,7 +32,7 @@ export const AuthProvider = ({ children}) => {
   },[]);
   const createUserInDatabase = async (authUser) => {
     try{
-      await axios.post('${API_URL}/api/users',{
+      await axios.post(`${API_URL}/api/users`,{
         id: authUser.id,
         email: authUser.email,
         name: authUser.user_metadata?.name || authUser.email.split('@')[0]
