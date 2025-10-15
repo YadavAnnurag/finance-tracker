@@ -3,9 +3,20 @@ const cors = require('cors');
 const { PrismaClient } = require('@prisma/client');
 
 const app = express();
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({
+  log: ['error', 'warn'],
+});
 
-app.use(cors());
+// CORS configuration - ONLY ONE, at the top
+app.use(cors({
+  origin: [
+    'http://localhost:3000',
+    'https://financetracker-one-ebon.vercel.app',
+    'https://*.vercel.app'
+  ],
+  credentials: true
+}));
+
 app.use(express.json());
 
 // Health check
@@ -13,26 +24,22 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Server is running' });
 });
 
-
-app.use(cors({
-  origin: [
-    'http://localhost:3000',
-    'https://financetracker-one-ebon.vercel.app/' 
-  ],
-  credentials: true
-}));
-
 // ============= USER ROUTES =============
 app.post('/api/users', async (req, res) => {
   try {
     const { id, email, name } = req.body;
+    console.log('Creating/updating user:', id);
+    
     const user = await prisma.user.upsert({
       where: { id: id },
       update: { email, name },
       create: { id, email, name }
     });
+    
+    console.log('User created/updated successfully');
     res.json(user);
   } catch (error) {
+    console.error('Error with user:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -47,19 +54,7 @@ app.get('/api/categories/:userId', async (req, res) => {
     });
     res.json(categories);
   } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Create a category
-app.post('/api/categories', async (req, res) => {
-  try {
-    const { name, type, userId } = req.body;
-    const category = await prisma.category.create({
-      data: { name, type, userId }
-    });
-    res.json(category);
-  } catch (error) {
+    console.error('Error fetching categories:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -68,6 +63,30 @@ app.post('/api/categories', async (req, res) => {
 app.post('/api/categories/default/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
+    
+    console.log('=== Creating default categories for user:', userId);
+    
+    // Check if user exists
+    const user = await prisma.user.findUnique({
+      where: { id: userId }
+    });
+    
+    if (!user) {
+      console.error('User not found:', userId);
+      return res.status(404).json({ error: 'User not found. Please create user first.' });
+    }
+    
+    console.log('User found:', user.email);
+    
+    // Check if categories already exist
+    const existingCategories = await prisma.category.findMany({
+      where: { userId }
+    });
+    
+    if (existingCategories.length > 0) {
+      console.log('Categories already exist, returning existing:', existingCategories.length);
+      return res.json(existingCategories);
+    }
     
     const defaultCategories = [
       // Expense categories
@@ -88,13 +107,41 @@ app.post('/api/categories/default/:userId', async (req, res) => {
       { name: 'Other Income', type: 'income', userId }
     ];
 
-    const categories = await prisma.category.createMany({
+    console.log('Creating', defaultCategories.length, 'categories...');
+    
+    // Create all categories
+    await prisma.category.createMany({
       data: defaultCategories,
       skipDuplicates: true
     });
+    
+    // Fetch and return the created categories
+    const createdCategories = await prisma.category.findMany({
+      where: { userId },
+      orderBy: { name: 'asc' }
+    });
 
-    res.json(categories);
+    console.log('Successfully created', createdCategories.length, 'categories');
+    res.json(createdCategories);
   } catch (error) {
+    console.error('Error creating default categories:', error);
+    res.status(500).json({ 
+      error: error.message,
+      userId: req.params.userId
+    });
+  }
+});
+
+// Create a single category
+app.post('/api/categories', async (req, res) => {
+  try {
+    const { name, type, userId } = req.body;
+    const category = await prisma.category.create({
+      data: { name, type, userId }
+    });
+    res.json(category);
+  } catch (error) {
+    console.error('Error creating category:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -107,6 +154,7 @@ app.delete('/api/categories/:id', async (req, res) => {
     });
     res.json({ message: 'Category deleted' });
   } catch (error) {
+    console.error('Error deleting category:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -137,6 +185,7 @@ app.get('/api/transactions/:userId', async (req, res) => {
 
     res.json(transactions);
   } catch (error) {
+    console.error('Error fetching transactions:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -166,6 +215,7 @@ app.get('/api/transactions/summary/:userId', async (req, res) => {
       balance
     });
   } catch (error) {
+    console.error('Error fetching summary:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -187,6 +237,7 @@ app.post('/api/transactions', async (req, res) => {
     });
     res.json(transaction);
   } catch (error) {
+    console.error('Error creating transaction:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -210,6 +261,7 @@ app.put('/api/transactions/:id', async (req, res) => {
     
     res.json(transaction);
   } catch (error) {
+    console.error('Error updating transaction:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -222,11 +274,18 @@ app.delete('/api/transactions/:id', async (req, res) => {
     });
     res.json({ message: 'Transaction deleted' });
   } catch (error) {
+    console.error('Error deleting transaction:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
+// Graceful shutdown
+process.on('SIGTERM', async () => {
+  await prisma.$disconnect();
+  process.exit(0);
+});
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`✅ Server running on http://localhost:${PORT}`);
+  console.log(`✅ Server running on port ${PORT}`);
 });
